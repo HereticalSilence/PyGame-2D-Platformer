@@ -25,13 +25,18 @@ FramePerSec = pygame.time.Clock()
 #-- Setup PyGame Related Things --# 
 displaySurface = pygame.display.set_mode((WIDTH, HEIGHT))
 background = pygame.image.load("Media/background.png")
-pygame.display.set_caption("PyGame - Noodle Jump without the noods 😭") 
+pygame.display.set_caption("Snowman Jumper") 
+verdanaS20 = pygame.font.SysFont("Verdana", 20) 
+verdanaS14 = pygame.font.SysFont("Verdana", 14) 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+
         #-- Load the player image and get rectangle --#
-        self.surf = pygame.image.load("Media/snowman.png")
+        self.LeftFacing = pygame.image.load("Media/snowman.png")
+        self.RightFacing = pygame.transform.flip(self.LeftFacing, True, False)
+        self.surf = self.RightFacing
         self.rect = self.surf.get_rect()
 
         #-- Position, Vel, and Acceleration --#
@@ -53,8 +58,10 @@ class Player(pygame.sprite.Sprite):
                 
         if pressed_keys[K_LEFT]:
             self.acc.x = -ACC
+            self.surf = self.LeftFacing
         if pressed_keys[K_RIGHT]:
             self.acc.x = ACC
+            self.surf = self.RightFacing
                  
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc
@@ -216,9 +223,23 @@ while True:
         for entity in all_sprites:
             entity.kill()
             time.sleep(1)
-            displaySurface.fill((255,0,0))
+            displaySurface.fill((0, 0, 0))
+            vertPos = 10
+            creditDisplay  = [
+                verdanaS20.render(f"THANKS FOR PLAYING", True, (255, 255, 255)),
+                verdanaS20.render(f"FINAL SCORE: {P1.score}", True, (255, 255, 255)),
+                verdanaS20.render(f" ", True, (255, 255, 255)),
+                verdanaS20.render(f" ", True, (255, 255, 255)),
+                verdanaS20.render(f" ", True, (255, 255, 255)),
+                verdanaS20.render(f"CREDITS", True, (255, 255, 255)),
+                verdanaS14.render(f"CodersLegacy - Base PyGame Code and Textures", True, (255, 255, 255)),
+                verdanaS14.render(f"HereticalSilence - Additional Code", True, (255, 255, 255)),
+                              ]
+            for credit in creditDisplay:
+                displaySurface.blit(credit, (credit.get_rect(center=(WIDTH/2, vertPos))))
+                vertPos += credit.get_height() 
             pygame.display.update()
-            time.sleep(1)
+            time.sleep(5)
             pygame.quit()
             sys.exit()
  
@@ -235,9 +256,8 @@ while True:
                 coin.kill()
  
     plat_gen()
-    displaySurface.blit(background, (0,0))
-    font = pygame.font.SysFont("Verdana", 20)     
-    scoreDisplay  = font.render(str(P1.score), True, (123,255,0))   
+    displaySurface.blit(background, (0,0))    
+    scoreDisplay  = verdanaS20.render(str(P1.score), True, (123,255,0))   
     displaySurface.blit(scoreDisplay, (WIDTH/2, 10))   
      
     for entity in all_sprites:
