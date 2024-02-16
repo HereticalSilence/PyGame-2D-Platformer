@@ -3,35 +3,49 @@ from pygame.locals import *
 import sys
 import random
 import time
- 
+
+#-- Initialize pygame --#
 pygame.init()
-vec = pygame.math.Vector2 #2 for two dimensional
- 
+
+#-- Vector 2 for 2D math --#
+vec = pygame.math.Vector2 
+
+#-- Width and Height --#
 HEIGHT = 450
 WIDTH = 400
+
+#-- Acceleration and Friction --#
 ACC = 0.5
 FRIC = -0.12
+
+#-- FPS Related --#
 FPS = 60
- 
 FramePerSec = pygame.time.Clock()
- 
-displaysurface = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("PyGame - Noodle Jump without the noods 😭")
- 
+
+#-- Setup PyGame Related Things --# 
+displaySurface = pygame.display.set_mode((WIDTH, HEIGHT))
+background = pygame.image.load("Media/background.png")
+pygame.display.set_caption("PyGame - Noodle Jump without the noods 😭") 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__() 
-        #self.image = pygame.image.load("character.png")
-        self.surf = pygame.Surface((30, 30))
-        self.surf.fill((255,255,0))
+        super().__init__()
+        #-- Load the player image and get rectangle --#
+        self.surf = pygame.image.load("Media/snowman.png")
         self.rect = self.surf.get_rect()
-   
+
+        #-- Position, Vel, and Acceleration --#
         self.pos = vec((10, 360))
         self.vel = vec(0,0)
         self.acc = vec(0,0)
+
+        #-- Boolean for Jumping --#
         self.jumping = False
+
+        #-- Score Counter --#
         self.score = 0 
- 
+    
+    #-- Movement Function --#
     def move(self):
         self.acc = vec(0,0.5)
     
@@ -45,7 +59,8 @@ class Player(pygame.sprite.Sprite):
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-         
+        
+        #-- Allow the player to wrap around the screen --#
         if self.pos.x > WIDTH:
             self.pos.x = 0
         if self.pos.x < 0:
@@ -65,30 +80,47 @@ class Player(pygame.sprite.Sprite):
                 self.vel.y = -3
  
     def update(self):
-        hits = pygame.sprite.spritecollide(self ,platforms, False)
+        hits = pygame.sprite.spritecollide(self, platforms, False)
         if self.vel.y > 0:        
             if hits:
                 if self.pos.y < hits[0].rect.bottom:
-                    if hits[0].point == True:   
+                    if hits[0].point:   
                         hits[0].point = False   
                         self.score += 1          
                     self.pos.y = hits[0].rect.top +1
                     self.vel.y = 0
                     self.jumping = False
  
- 
-class platform(pygame.sprite.Sprite):
-    def __init__(self):
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, pos):
         super().__init__()
-        self.surf = pygame.Surface((random.randint(50,100), 12))
-        self.surf.fill((0,255,0))
-        self.rect = self.surf.get_rect(center = (random.randint(0,WIDTH-10),
-                                                 random.randint(0, HEIGHT-30)))
-        self.speed = random.randint(-1, 1)
+        self.image = pygame.image.load("Media/Coin.png")
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+    
+    def update(self):
+        if self.rect.colliderect(P1.rect):
+            P1.score += 5
+            self.kill()
+
+class platform(pygame.sprite.Sprite):
+    def __init__(self, width = 0, height = 18):
+        super().__init__()
         
+        if width == 0:
+            width = random.randint(50, 120)
+
+        self.image = pygame.image.load("Media/platform.png")
+        self.surf = pygame.transform.scale(self.image, (width, height))
+        self.rect = self.surf.get_rect(center = (random.randint(0,WIDTH-10),
+                                               random.randint(0, HEIGHT-30)))
+
         self.point = True   
         self.moving = True
-        
+        self.speed = random.randint(-1, 1)
+
+        if (self.speed == 0):
+            self.moving == False
     
     def move(self):
         hits = self.rect.colliderect(P1.rect)
@@ -100,6 +132,10 @@ class platform(pygame.sprite.Sprite):
                 self.rect.right = 0
             if self.speed < 0 and self.rect.right < 0:
                 self.rect.left = WIDTH
+        
+    def generateCoin(self):
+        if self.speed == 0:
+            coins.add(Coin((self.rect.centerx, self.rect.centery - 50)))
  
  
 def check(platform, groupies):
@@ -114,9 +150,9 @@ def check(platform, groupies):
         C = False
  
 def plat_gen():
-    while len(platforms) < 6:
+    while len(platforms) < 7:
         width = random.randrange(50,100)
-        p  = platform()      
+        p  = None     
         C = True
          
         while C:
@@ -124,34 +160,41 @@ def plat_gen():
              p.rect.center = (random.randrange(0, WIDTH - width),
                               random.randrange(-50, 0))
              C = check(p, platforms)
+    
+        p.generateCoin()
         platforms.add(p)
         all_sprites.add(p)
  
  
-        
-PT1 = platform()
-P1 = Player()
- 
-PT1.surf = pygame.Surface((WIDTH, 20))
-PT1.surf.fill((255,0,0))
-PT1.rect = PT1.surf.get_rect(center = (WIDTH/2, HEIGHT - 10))
- 
+#-- PyGame Sprite Groups --#
 all_sprites = pygame.sprite.Group()
+platforms = pygame.sprite.Group()
+coins = pygame.sprite.Group()    
+
+#-- Base Platform --#
+PT1 = platform(450, 80)
+PT1.rect = PT1.surf.get_rect(center = (WIDTH/2, HEIGHT - 10))
+PT1.moving = False
+PT1.point = False
+
+#-- Create Player --#
+P1 = Player()
+
+#-- Add Platform and Player to groups --#
 all_sprites.add(PT1)
 all_sprites.add(P1)
- 
-platforms = pygame.sprite.Group()
 platforms.add(PT1)
-
-PT1.moving = False
-PT1.point = False   
+  
  
 for x in range(random.randint(4,5)):
     C = True
     pl = platform()
+
     while C:
         pl = platform()
         C = check(pl, platforms)
+
+    pl.generateCoin()
     platforms.add(pl)
     all_sprites.add(pl)
  
@@ -173,7 +216,7 @@ while True:
         for entity in all_sprites:
             entity.kill()
             time.sleep(1)
-            displaysurface.fill((255,0,0))
+            displaySurface.fill((255,0,0))
             pygame.display.update()
             time.sleep(1)
             pygame.quit()
@@ -185,16 +228,25 @@ while True:
             plat.rect.y += abs(P1.vel.y)
             if plat.rect.top >= HEIGHT:
                 plat.kill()
+        
+        for coin in coins:
+            coin.rect.y += abs(P1.vel.y)
+            if coin.rect.top >= HEIGHT:
+                coin.kill()
  
     plat_gen()
-    displaysurface.fill((0,0,0))
-    f = pygame.font.SysFont("Verdana", 20)     
-    g  = f.render(str(P1.score), True, (123,255,0))   
-    displaysurface.blit(g, (WIDTH/2, 10))   
+    displaySurface.blit(background, (0,0))
+    font = pygame.font.SysFont("Verdana", 20)     
+    scoreDisplay  = font.render(str(P1.score), True, (123,255,0))   
+    displaySurface.blit(scoreDisplay, (WIDTH/2, 10))   
      
     for entity in all_sprites:
-        displaysurface.blit(entity.surf, entity.rect)
+        displaySurface.blit(entity.surf, entity.rect)
         entity.move()
+    
+    for coin in coins:
+        displaySurface.blit(coin.image, coin.rect)
+        coin.update()
  
     pygame.display.update()
     FramePerSec.tick(FPS)
