@@ -16,7 +16,7 @@ FPS = 60
 FramePerSec = pygame.time.Clock()
  
 displaysurface = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Game")
+pygame.display.set_caption("PyGame - Noodle Jump without the noods 😭")
  
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -91,8 +91,11 @@ class platform(pygame.sprite.Sprite):
         
     
     def move(self):
+        hits = self.rect.colliderect(P1.rect)
         if self.moving == True:  
             self.rect.move_ip(self.speed,0)
+            if hits:
+                P1.pos += (self.speed, 0)
             if self.speed > 0 and self.rect.left > WIDTH:
                 self.rect.right = 0
             if self.speed < 0 and self.rect.right < 0:
