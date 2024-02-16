@@ -29,6 +29,10 @@ pygame.display.set_caption("Snowman Jumper")
 verdanaS20 = pygame.font.SysFont("Verdana", 20) 
 verdanaS14 = pygame.font.SysFont("Verdana", 14) 
 
+#-- Music --#
+pygame.mixer.music.load("Media/happywalking.ogg")
+pygame.mixer.music.play(-1)
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -220,6 +224,9 @@ while True:
                 P1.cancel_jump()
 
     if P1.rect.top > HEIGHT:
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load("Media/GameOver.mp3")
+        pygame.mixer.music.play()
         for entity in all_sprites:
             entity.kill()
             time.sleep(1)
@@ -234,6 +241,7 @@ while True:
                 verdanaS20.render(f"CREDITS", True, (255, 255, 255)),
                 verdanaS14.render(f"CodersLegacy - Base PyGame Code and Textures", True, (255, 255, 255)),
                 verdanaS14.render(f"HereticalSilence - Additional Code", True, (255, 255, 255)),
+                verdanaS14.render(f"Ansimuz - Music", True, (255, 255, 255)),
                               ]
             for credit in creditDisplay:
                 displaySurface.blit(credit, (credit.get_rect(center=(WIDTH/2, vertPos))))
