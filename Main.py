@@ -96,7 +96,8 @@ class Player(pygame.sprite.Sprite):
             if hits:
                 if self.pos.y < hits[0].rect.bottom:
                     if hits[0].point:   
-                        hits[0].point = False   
+                        hits[0].point = False
+                        pygame.mixer.Sound.play(pygame.mixer.Sound("Media/Snowball Impact 3.wav"))   
                         self.score += 1          
                     self.pos.y = hits[0].rect.top +1
                     self.vel.y = 0
@@ -217,22 +218,24 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == pygame.KEYDOWN:    
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                 P1.jump()
         if event.type == pygame.KEYUP:    
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                 P1.cancel_jump()
 
     if P1.rect.top > HEIGHT:
         pygame.mixer.music.stop()
-        pygame.mixer.music.load("Media/GameOver.mp3")
-        pygame.mixer.music.play()
+        pygame.mixer.Sound.play(pygame.mixer.Sound("Media/GameOver.mp3")) 
         for entity in all_sprites:
             entity.kill()
             time.sleep(1)
             displaySurface.fill((0, 0, 0))
             vertPos = 10
             creditDisplay  = [
+                verdanaS20.render(f" ", True, (255, 255, 255)),
+                verdanaS20.render(f" ", True, (255, 255, 255)),
+                verdanaS20.render(f" ", True, (255, 255, 255)),
                 verdanaS20.render(f"THANKS FOR PLAYING", True, (255, 255, 255)),
                 verdanaS20.render(f"FINAL SCORE: {P1.score}", True, (255, 255, 255)),
                 verdanaS20.render(f" ", True, (255, 255, 255)),
